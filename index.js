@@ -13,10 +13,12 @@ app.post("/accounts", async (req, res) => {
     const { refresh_token } = req.body;
 
     if (!refresh_token) {
-      return res.status(400).json({ error: "refresh_token obrigatório" });
+      return res.status(400).json({
+        error: "refresh_token obrigatório"
+      });
     }
 
-    // 🔥 TROCA refresh_token por access_token
+    // 🔐 1. GERAR ACCESS TOKEN
     const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
       method: "POST",
       headers: {
@@ -26,28 +28,45 @@ app.post("/accounts", async (req, res) => {
         client_id: process.env.CLIENT_ID,
         client_secret: process.env.CLIENT_SECRET,
         refresh_token: refresh_token,
-        grant_type: "1//03KnOpkGfswpuCgYIARAAGAMSNwF-L9Ir8y00ZDqXywkd7smB-Il-8wrVcsVplBR16PYYA7h2_khp4vz2ryPukjrmsulhdnas_SE"
+        grant_type: "refresh_token"
       })
     });
 
     const tokenData = await tokenResponse.json();
 
+    if (!tokenData.access_token) {
+      return res.status(500).json({
+        error: "Erro ao gerar access_token",
+        details: tokenData
+      });
+    }
+
     const access_token = tokenData.access_token;
 
-    // 🔥 CHAMA GOOGLE ADS DIRETO
-    const response = await fetch("https://googleads.googleapis.com/v16/customers:listAccessibleCustomers", {
-      method: "GET",
-      headers: {
-        "Authorization": `Bearer ${access_token}`,
-        "developer-token": process.env.DEVELOPER_TOKEN
+    // 📊 2. LISTAR CONTAS GOOGLE ADS (FORMA CORRETA)
+    const response = await fetch(
+      "https://googleads.googleapis.com/v16/customers:listAccessibleCustomers",
+      {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${access_token}`,
+          "developer-token": process.env.DEVELOPER_TOKEN,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({})
       }
-    });
+    );
 
     const data = await response.json();
 
+    // 🔄 FORMATAR IDS
+    const accounts = (data.resourceNames || []).map((item) =>
+      item.replace("customers/", "")
+    );
+
     res.json({
       success: true,
-      accounts: data.resourceNames || []
+      accounts
     });
 
   } catch (error) {
@@ -59,6 +78,7 @@ app.post("/accounts", async (req, res) => {
   }
 });
 
+// 🚀 PORTA CORRETA PRA CLOUD
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, "0.0.0.0", () => {
