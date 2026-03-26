@@ -60,6 +60,21 @@ app.post("/accounts", async (req, res) => {
 
     const data = await response.json();
 
+
+    const text = await response.text();
+    console.log("🔥 GOOGLE RESPONSE BRUTA:");
+    console.log(text);
+
+    // tenta converter pra JSON
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      return res.status(500).json({
+        error: "Resposta NÃO é JSON",
+        raw: text
+      });
+    }
     // 🔄 FORMATAR IDS
     const accounts = (data.resourceNames || []).map((item) =>
       item.replace("customers/", "")
