@@ -14,7 +14,7 @@ app.get("/", (req, res) => {
   res.send("API ONLINE 🚀");
 });
 
-// 🔥 LISTAR CONTAS (SEM CUSTOMER_ID)
+// 🔥 FORMA CORRETA
 app.post("/accounts", async (req, res) => {
   try {
     const { refresh_token } = req.body;
@@ -23,17 +23,24 @@ app.post("/accounts", async (req, res) => {
       return res.status(400).json({ error: "refresh_token obrigatório" });
     }
 
-    const customers = await client.listAccessibleCustomers(refresh_token);
+    const customer = client.Customer({
+      customer_id: "customers/0", // dummy
+      refresh_token,
+    });
+
+    const result = await customer.listAccessibleCustomers();
 
     res.json({
       success: true,
-      customers
+      customers: result.resourceNames
     });
 
   } catch (error) {
-    console.error(error);
+    console.error("ERRO REAL:", error);
+
     res.status(500).json({
-      error: error.message
+      error: error.message,
+      details: error
     });
   }
 });
