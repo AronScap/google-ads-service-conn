@@ -51,7 +51,7 @@ app.post("/accounts", async (req, res) => {
         headers: {
           "Authorization": `Bearer ${access_token}`,
           "developer-token": process.env.DEVELOPER_TOKEN,
-          "login-customer-id": process.env.CUSTOMER_ID
+          "login-customer-id": process.env.CUSTOMER_ID,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({})
