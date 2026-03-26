@@ -1,7 +1,3 @@
-import express from "express";
-import dotenv from "dotenv";
-import { GoogleAdsApi } from "google-ads-api";
- 
 const express = require("express");
 
 const app = express();
@@ -20,6 +16,9 @@ app.post("/accounts", async (req, res) => {
   });
 });
 
-app.listen(3000, () => {
-  console.log("Rodando...");
+// 🔥 CORRETO PARA CLOUD
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, "0.0.0.0", () => {
+  console.log("🚀 Rodando na porta " + PORT);
 });
